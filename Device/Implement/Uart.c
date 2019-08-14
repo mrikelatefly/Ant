@@ -66,7 +66,7 @@ void UsartInit(u32 bound){
 	NVIC_InitTypeDef NVIC_InitStructure;
 	 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOA, ENABLE);	//Ê¹ÄÜUSART1£¬GPIOAÊ±ÖÓ
-  
+	bound=115200;
 	//USART1_TX   GPIOA.9
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9; //PA.9
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;

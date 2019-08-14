@@ -62,7 +62,7 @@ char SD_Init(void)
 	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIOB0
 	GPIO_SetBits(GPIOB,GPIO_Pin_0);
 	//初始化SPI1
-	SPI1_Init();
+	
 	
 	MicroSD_CS_SET;
 	//发送至少74个时钟信号
@@ -75,7 +75,7 @@ char SD_Init(void)
 		if(retry>800)
 		{ //超过200次   
 		//CMD0 Error!	return(INIT_CMD0_ERROR); 
-			//printf("Init MicroSD CMD0 Error!!!Back:%d\n\n",temp);
+			printf("Init MicroSD CMD0 Error!!!Back:%d\n\n",temp);
 			return 0;
 		}   
 	}    
@@ -91,17 +91,16 @@ char SD_Init(void)
 		if(retry>800)    
 		{ 
 			//超过100次
-			//printf("Init 1MicroSD CMD1 Error!!!Back:%d\n\n",temp);
+			printf("Init 1MicroSD CMD1 Error!!!Back:%d\n\n",temp);
 			return 0;
 		}
 	}
 	while(temp!=0x00);//回应00h停止写入    
 	MicroSD_CS_SET;  //片选无效
-	//printf("Init MicroSD sent CMD1 successfully!!!times:%d\n\n",retry);
+	printf("Init MicroSD sent CMD1 successfully!!!times:%d\n\n",retry);
 	
 	//更换更快的SPI速率
-	SPI1_SetSpeed(SPI_BaudRatePrescaler_4);
-	
+	SPI1_SetSpeed(SPI_BaudRatePrescaler_16);
 	return 0;
 }
 
