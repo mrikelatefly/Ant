@@ -2,8 +2,8 @@
 #include "FrameBox.h"
 #include "StringOperation.h"
 #include "Init.h"
-#include "ff.h"	
-#include "malloc.h"
+
+
 int x=0,y=0;
 
 
@@ -13,14 +13,7 @@ extern char MicroSDDataBuff[512];//一个扇区的大小
 u16 color=0x000;
 extern char MicroSDDataBuff[512];
 
-FATFS *fs[_VOLUMES];//逻辑磁盘工作区.	 
-FIL *file;	  		//文件1
-FIL *ftemp;	  		//文件2.
-UINT br,bw;			//读写变量
-FILINFO fileinfo;	//文件信息
-DIR dir;  			//目录
 
-u8 *fatbuf;			//SD卡数据缓存区
 
 
 void MicroSDTest()
@@ -37,58 +30,56 @@ void MicroSDTest()
 
 void W25Q128Test()
 {
-	char arr1[100]="this is a W25Q128 Test It works.";
+	//char arr1[100]="this is a W25Q128 Test It works.";
 	char arr2[100]={0};
-	W25QXX_Write((u8 *)arr1,1000,sizeof(arr1));
+	//W25QXX_Write((u8 *)arr1,1000,sizeof(arr1));
 	W25QXX_Read((u8 *)arr2,1000,sizeof(arr2));
 	printf("W25QRead:%s\n\n",arr2);
 }
 
-void FrameTest()
+//void FrameTest()
+//{
+//	/*
+//void FrameClear(u16 Color);
+//void FrameFullAera(u16 sx,u16 sy,u16 ex,u16 ey,u16 color);
+//void FrameDrawLine(u16 x1, u16 y1, u16 x2, u16 y2,u16 Color);
+//void FrameDrawRectangle(u16 x1, u16 y1, u16 x2, u16 y2,u16 Color);
+//void FrameDrawCircle(u16 x0,u16 y0,u8 r,u16 Color);
+//void FrameShowChar(u16 x,u16 y,u8 num,u8 size,u16 Color);
+//void FrameShowString(u16 x,u16 y,u16 width,u16 height,u8 size,u8 *p,u16 Color);
+//	*/
+//	 FrameClear(YELLOW);
+//	 FrameFullAera(50,50,100,100,BLUE);
+//	 FrameDrawRectangle(25,25, 125, 125,RED);
+//	 FrameDrawCircle(100,100,50,BLACK);
+//	 FrameShowString(0,200,240,16,16,(u8 *)"this is Frame Test!!!",BLACK);
+//	
+//}
+
+
+int VsS1053BTest()
 {
-	/*
-void FrameClear(u16 Color);
-void FrameFullAera(u16 sx,u16 sy,u16 ex,u16 ey,u16 color);
-void FrameDrawLine(u16 x1, u16 y1, u16 x2, u16 y2,u16 Color);
-void FrameDrawRectangle(u16 x1, u16 y1, u16 x2, u16 y2,u16 Color);
-void FrameDrawCircle(u16 x0,u16 y0,u8 r,u16 Color);
-void FrameShowChar(u16 x,u16 y,u8 num,u8 size,u16 Color);
-void FrameShowString(u16 x,u16 y,u16 width,u16 height,u8 size,u8 *p,u16 Color);
-	*/
-	 FrameClear(YELLOW);
-	 FrameFullAera(50,50,100,100,BLUE);
-	 FrameDrawRectangle(25,25, 125, 125,RED);
-	 FrameDrawCircle(100,100,50,BLACK);
-	 FrameShowString(0,200,240,16,16,(u8 *)"this is Frame Test!!!",BLACK);
+	int result=0;
+	int i=0;
+	for(i=0;i<10;i++){
+		result=VS_Ram_Test();
+		delay_ms(20);
+		printf("Ram ID:%d\n\r",result);
+	}
 	
+	return result;
 }
 int main()
 {
-	
-		int times=0;
-		char Key=0x80;
-//FIL *fp;
+	int times=0;
+	char Key=0x80;
 	Init();
 	delay_ms(100);
-//	printf("I am working now!\n\r");
-//	if(!PS2_RedLight()){
-//		printf("Gamehandle is aredly in RedLight\n\r");
-//	}else{
-//		printf("not in game mode\n\r");
-//	}
+	printf("I am working now!\n\r");
 	MicroSDTest();
 	W25Q128Test();
 //	FrameTest();
-	/*
-	FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode);			
-	FRESULT f_close (FIL* fp);											
-	FRESULT f_read (FIL* fp, void* buff, UINT btr, UINT* br);		
-	FRESULT f_write (FIL* fp, const void* buff, UINT btw, UINT* bw);	
-	*///exfuns_init();
-	
-	//f_open (fp, "/aaa.txt", 1);	
-	//f_write (fp, "this is test",0, 0);
-	//f_close (fp);
+
 	while(1)
 	{
 			
@@ -114,28 +105,14 @@ int main()
 			}else
 			{
 				times=0;
-				printf("Ram Test:%d\r\n",VS_Ram_Test());//打印RAM测试结果
-				MicroSDTest();
+				VsS1053BTest();
+				//MicroSDTest();
 				VS_Sine_Test();
+				delay_ms(2000);
 			}
 				
 	}
 	
 }
 
-
-u8 exfuns_init(void)
-{
-	u8 i;
-	for(i=0;i<_VOLUMES;i++)
-	{
-		fs[i]=(FATFS*)mymalloc(SRAMIN,sizeof(FATFS));	//为磁盘i工作区申请内存	
-		if(!fs[i])break;
-	}
-	file=(FIL*)mymalloc(SRAMIN,sizeof(FIL));		//为file申请内存
-	ftemp=(FIL*)mymalloc(SRAMIN,sizeof(FIL));		//为ftemp申请内存
-	fatbuf=(u8*)mymalloc(SRAMIN,512);				//为fatbuf申请内存
-	if(i==_VOLUMES&&file&&ftemp&&fatbuf)return 0;  //申请有一个失败,即失败.
-	else return 1;	
-}
 

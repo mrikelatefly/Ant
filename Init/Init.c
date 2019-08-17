@@ -59,14 +59,15 @@ char Init(void)
 //		{
 //			(*(void(*)())InitStep[Step].Function)();
 //			printf("%s",InitStep[Step].Info);
+//				if(InitStep[Step].CallBack!=0)
+//				{
+//					(*(void(*)())InitStep[Step].CallBack)();
+//					printf("%s",InitStep[Step].CallBackInfo);
+//				}
 //		}
-//		if(InitStep[Step].CallBack!=0)
-//		{
-//			(*(void(*)())InitStep[Step].CallBack)();
-//			printf("%s",InitStep[Step].CallBackInfo);
-//		}
+		
 //	}
-	UsartInit(115200);
+	UsartInit(9600);
 	LEDInit();
 	delay_init();
 	SPI1_Init();
