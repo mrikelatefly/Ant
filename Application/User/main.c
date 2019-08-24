@@ -13,9 +13,6 @@ extern char MicroSDDataBuff[512];//一个扇区的大小
 u16 color=0x000;
 extern char MicroSDDataBuff[512];
 
-
-
-
 void MicroSDTest()
 {
 	//这是在内存卡初始化以后的测试进行读写如果不成功还是从读写序列号开始吧
@@ -63,7 +60,7 @@ int VsS1053BTest()
 	int i=0;
 	for(i=0;i<10;i++){
 		result=VS_Ram_Test();
-		delay_ms(20);
+		delay_us(200);
 		printf("Ram ID:%d\n\r",result);
 	}
 	

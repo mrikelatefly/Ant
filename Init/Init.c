@@ -67,7 +67,7 @@ char Init(void)
 //		}
 		
 //	}
-	UsartInit(9600);
+	UsartInit(115200);
 	LEDInit();
 	delay_init();
 	SPI1_Init();
@@ -75,12 +75,11 @@ char Init(void)
 	
 	//LCDInit();
 	SD_Init();
-	VS_Init();
+	
 	W25QXX_Init();
 	KeyInit();
+	VS_Init();
 	//my_mem_init(SRAMIN);
-	
-	
 	return isInit;
 }
 
