@@ -49,12 +49,24 @@ void LCDInit(void);
 void LCD_DrawPoint(u16 x,u16 y,u16 Color);
 /******************************************MicroSD**************************************************/
 
-char SD_Init(void);
-char WriteSectorToMicroSD(long addr,char *buff);
-char ReadSectorFromMicroSD(long sector,char *buffer);
 
-char WriteSectorsToMicroSD(long addr,char *buff,int count);
-char ReadSectorsFromMicroSD(long addr,char *buff,int count);
+#define MicroSD_CS_SET GPIO_SetBits(GPIOB,GPIO_Pin_0)
+#define MicroSD_CS_RESET GPIO_ResetBits(GPIOB,GPIO_Pin_0)
+
+extern u8  SD_Type;			//SD卡的类型
+//函数申明区 
+u8 SD_SPI_ReadWriteByte(u8 data);
+void SD_SPI_SpeedLow(void);
+void SD_SPI_SpeedHigh(void);
+u8 SD_WaitReady(void);							//等待SD卡准备
+u8 SD_GetResponse(u8 Response);					//获得相应
+u8 SD_Init(void);							//初始化
+u8 SD_ReadDisk(u8*buf,u32 sector,u8 cnt);		//读块
+u8 SD_WriteDisk(u8*buf,u32 sector,u8 cnt);		//写块
+u32 SD_GetSectorCount(void);   					//读扇区数
+u8 SD_GetCID(u8 *cid_data);                     //读SD卡CID
+u8 SD_GetCSD(u8 *csd_data);                     //读SD卡CSD
+ 
 
 
 /*******************************************SPI******************************************************/

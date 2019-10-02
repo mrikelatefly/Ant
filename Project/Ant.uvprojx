@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Commen\inc;..\Device\Interface;..\Init;..\Tools\Inc;..\File</IncludePath>
+              <IncludePath>..\Commen\inc;..\Device\Interface;..\Init;..\Tools\Inc;..\File;..\File\FAT</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -594,10 +594,42 @@
               <FileType>1</FileType>
               <FilePath>..\Tools\Src\Font.c</FilePath>
             </File>
+            <File>
+              <FileName>malloc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Tools\Src\malloc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>File</GroupName>
+          <Files>
+            <File>
+              <FileName>diskio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\File\FAT\diskio.c</FilePath>
+            </File>
+            <File>
+              <FileName>ff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\File\FAT\ff.c</FilePath>
+            </File>
+            <File>
+              <FileName>cc936.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\File\FAT\cc936.c</FilePath>
+            </File>
+            <File>
+              <FileName>exfuns.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\File\FAT\exfuns.c</FilePath>
+            </File>
+            <File>
+              <FileName>fattester.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\File\FAT\fattester.c</FilePath>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>
