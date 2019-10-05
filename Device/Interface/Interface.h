@@ -44,28 +44,74 @@ u8 PS2_AnologData(u8 button); //得到一个摇杆的模拟量
 void PS2_ClearData(void);	  //清除数据缓冲区
 /*******************************************LCD****************************************************/
 
-void LCDInit(void);
-//void LCD_Clear(u16 Color);
-void LCD_DrawPoint(u16 x,u16 y,u16 Color);
+//LCD重要参数集
+typedef struct  
+{										    
+	u16 width;			//LCD 宽度
+	u16 height;			//LCD 高度
+	u16 id;				//LCD ID
+	u8  dir;			//横屏还是竖屏控制：0，竖屏；1，横屏。	
+	u16	 wramcmd;		//开始写gram指令
+	u16  setxcmd;		//设置x坐标指令
+	u16  setycmd;		//设置y坐标指令	 
+}_lcd_dev; 	
+
+//LCD参数
+extern _lcd_dev lcddev;	//管理LCD重要参数
+/////////////////////////////////////用户配置区///////////////////////////////////	 
+//支持横竖屏快速定义切换，支持8/16位模式切换
+#define USE_HORIZONTAL  		 0	  //定义是否使用横屏 		0,不使用.1,使用.
+#define USE_HARDWARE_SPI     1    //1:Enable Hardware SPI;0:USE Soft SPI
+//////////////////////////////////////////////////////////////////////////////////	  
+
+//TFTLCD部分外要调用的函数		   
+extern u16  POINT_COLOR;//默认红色    
+extern u16  BACK_COLOR; //背景颜色.默认为白色
+
+
+void LCD_Init(void);
+void LCD_DisplayOn(void);
+void LCD_DisplayOff(void);
+void LCD_Clear(u16 Color);	 
+void LCD_SetCursor(u16 Xpos, u16 Ypos);
+void LCD_DrawPoint(u16 x,u16 y);//画点
+u16  LCD_ReadPoint(u16 x,u16 y); //读点
+void LCD_DrawLine(u16 x1, u16 y1, u16 x2, u16 y2);
+void LCD_DrawRectangle(u16 x1, u16 y1, u16 x2, u16 y2);		   
+void LCD_SetWindows(u16 xStar, u16 yStar,u16 xEnd,u16 yEnd);
+
+u16 LCD_RD_DATA(void);//读取LCD数据									    
+void LCD_WriteReg(u16 LCD_Reg, u16 LCD_RegValue);
+void LCD_WR_DATA(u16 data);
+u16 LCD_ReadReg(u8 LCD_Reg);
+void LCD_WriteRAM_Prepare(void);
+void LCD_WriteRAM(u16 RGB_Code);
+u16 LCD_ReadRAM(void);		   
+u16 LCD_BGR2RGB(u16 c);
+void LCD_SetParam(void);
+
 /******************************************MicroSD**************************************************/
 
 
-#define MicroSD_CS_SET GPIO_SetBits(GPIOB,GPIO_Pin_0)
-#define MicroSD_CS_RESET GPIO_ResetBits(GPIOB,GPIO_Pin_0)
+typedef struct{
+	u8 CID[128];
+	u8 RCA[16]; 
+	u8 CSD[128]; 
+	u8 SCR[64];
+	u8 OCR[32];
+	u8 MicroSDType;
+	int MicroSDMemorySize;
+}__MicroSDInfo;
 
-extern u8  SD_Type;			//SD卡的类型
-//函数申明区 
-u8 SD_SPI_ReadWriteByte(u8 data);
-void SD_SPI_SpeedLow(void);
-void SD_SPI_SpeedHigh(void);
-u8 SD_WaitReady(void);							//等待SD卡准备
-u8 SD_GetResponse(u8 Response);					//获得相应
-u8 SD_Init(void);							//初始化
-u8 SD_ReadDisk(u8*buf,u32 sector,u8 cnt);		//读块
-u8 SD_WriteDisk(u8*buf,u32 sector,u8 cnt);		//写块
-u32 SD_GetSectorCount(void);   					//读扇区数
-u8 SD_GetCID(u8 *cid_data);                     //读SD卡CID
-u8 SD_GetCSD(u8 *csd_data);                     //读SD卡CSD
+
+extern __MicroSDInfo  MicroSDInfo;
+
+char MicroSDInit(void);
+u8 MicroSDReadDisk(u8*buf,u32 sector,u8 cnt);
+u8 MicroSDWriteDisk(u8*buf,u32 sector,u8 cnt);
+u8 MicroSDGetCID(u8 *cid_data);
+u8 MicroSDGetCSD(u8 *csd_data);
+u32 MicroSDGetSectorCount(void);
  
 
 
@@ -118,11 +164,11 @@ void W25QXX_WAKEUP(void);				//唤醒
 
 /*******************************************VS1053B***********************************************/
 
+#define VS_DQ       PBin(7)  	//DREQ
 #define VS_RST      PBout(5) 	//RST
 #define VS_XCS      PBout(6)  	//XCS
-#define VS_DQ       PBin(7)  	//DREQ 
 #define VS_XDCS     PBout(8)  	//XDCS 
-
+//////////////////////////////////////////////////////////////
 
 __packed typedef struct 
 {							  
@@ -136,10 +182,8 @@ __packed typedef struct
 	u8 saveflag; 	//保存标志,0X0A,保存过了;其他,还从未保存	   
 }_vs10xx_obj;
 
+
 extern _vs10xx_obj vsset;		//VS10XX设置
-
-
-
 u16  VS_RD_Reg(u8 address);				//读寄存器
 u16  VS_WRAM_Read(u16 addr);	    	//读RAM
 void VS_WRAM_Write(u16 addr,u16 val);	//写RAM

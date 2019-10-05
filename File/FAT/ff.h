@@ -249,6 +249,10 @@ TCHAR* f_gets (TCHAR* buff, int len, FIL* fp);						/* Get a string from the fil
 #define f_rewind(fp) f_lseek((fp), 0)
 #define f_rewinddir(dp) f_readdir((dp), 0)
 
+FRESULT dir_sdi (DIR *dp,UINT idx);					//此处为自行添加的,用于方便查找上一个文件.
+void ff_enter(FATFS *fs);							//在diskio.c实现
+void ff_leave(FATFS* fs);
+
 #ifndef EOF
 #define EOF (-1)
 #endif

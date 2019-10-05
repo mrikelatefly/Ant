@@ -6,85 +6,67 @@
 /* This is an example of glue functions to attach various exsisting      */
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
+#include "diskio.h"			/* FatFs lower layer API */
+#include "Interface.h"
+#include "malloc.h"	
 
-#include "diskio.h"		/* FatFs lower layer API */
-#include "Interface.h"	/* Example: Header file of existing USB MSD control module */
-
-//#include "atadrive.h"	/* Example: Header file of existing ATA harddisk control module */
-//#include "sdcard.h"		/* Example: Header file of existing MMC/SDC contorl module */
-
-/* Definitions of physical drive number for each drive */
-//#define ATA		0	/* Example: Map ATA harddisk to physical drive 0 */
-//#define MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
-#define USB		2	/* Example: Map USB MSD to physical drive 2 */
+//////////////////////////////////////////////////////////////////////////////////	 
+//本程序只供学习使用，未经作者许可，不得用于其它任何用途
+//ALIENTEK战舰STM32开发板V3
+//FATFS底层(diskio) 驱动代码	   
+//正点原子@ALIENTEK
+//技术论坛:www.openedv.com
+//创建日期:2015/1/20
+//版本：V1.0
+//版权所有，盗版必究。
+//Copyright(C) 广州市星翼电子科技有限公司 2009-2019
+//All rights reserved									  
+////////////////////////////////////////////////////////////////////////////////// 
 
 #define SD_CARD	 0  //SD卡,卷标为0
 #define EX_FLASH 1	//外部flash,卷标为1
-/*-----------------------------------------------------------------------*/
-/* Get Drive Status                                                      */
-/*-----------------------------------------------------------------------*/
 
+#define FLASH_SECTOR_SIZE 	512			  
+//对于W25Q128
+//前12M字节给fatfs用,12M字节后,用于存放字库,字库占用3.09M.	剩余部分,给客户自己用	 			    
+u16	    FLASH_SECTOR_COUNT=2048*12;	//W25Q1218,前12M字节给FATFS占用
+#define FLASH_BLOCK_SIZE   	8     	//每个BLOCK有8个扇区
+
+
+//获得磁盘状态
 DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
-{
-	//DSTATUS stat;
-	//int result;
-	//由于硬件初始化在init的过程中就已经做过了这里就直接跳过
-	switch (pdrv) {
-	case SD_CARD :
-		//result = ATA_disk_status();
-		// translate the reslut code here
-		return 0;
-	case EX_FLASH :
-		//result = MMC_disk_status();
-		// translate the reslut code here
-		return 0;
-	case USB :
-		//result = USB_disk_status();
-		// translate the reslut code here
-		return 0;
-	}
-	return 0;
-}
-
-
-
-/*-----------------------------------------------------------------------*/
-/* Inidialize a Drive                                                    */
-/*-----------------------------------------------------------------------*/
-
+{ 
+	return RES_OK;
+}  
+//初始化磁盘
 DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat=0;
-	//int result;
-
-	switch (pdrv) {
-	case SD_CARD :
-		//result = ATA_disk_initialize();
-		// translate the reslut code here
-		return stat;
-	case EX_FLASH :
-		//result = MMC_disk_initialize();
-		// translate the reslut code here
-		return stat;
-	case USB :
-		//result = USB_disk_initialize();
-		// translate the reslut code here
-		return stat;
-	}
-	return 0;//直接返回成功
-	//return STA_NOINIT;
-}
-
-
-
-/*-----------------------------------------------------------------------*/
-/* Read Sector(s)                                                        */
-/*-----------------------------------------------------------------------*/
-
+	u8 res=0;	    
+	switch(pdrv)
+	{
+		case SD_CARD://SD卡
+			res=MicroSDInit();//SD卡初始化
+			printf("MicoSD Inited");
+  		break;
+		case EX_FLASH://外部flash
+			W25QXX_Init();
+			FLASH_SECTOR_COUNT=2048*12;//W25Q1218,前12M字节给FATFS占用 
+ 			break;
+		default:
+			res=1;
+	}		 
+	if(res)return  STA_NOINIT;
+	else return 0; //初始化成功 
+} 
+//读扇区
+//pdrv:磁盘编号0~9
+//*buff:数据接收缓冲首地址
+//sector:扇区地址
+//count:需要读取的扇区数
 DRESULT disk_read (
 	BYTE pdrv,		/* Physical drive nmuber to identify the drive */
 	BYTE *buff,		/* Data buffer to store read data */
@@ -92,48 +74,41 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-	DRESULT res;
-	//int result;
-	if (!count)return RES_PARERR;//count不能等于0，否则返回参数错误	
-	switch (pdrv) {
-	case SD_CARD :
-			res=SD_ReadDisk(buff,sector,count); 
-		 	if(res)//STM32 SPI的bug,在sd卡操作失败的时候如果不执行下面的语句,可能导致SPI读写异常
+	u8 res=0; 
+    if (!count)return RES_PARERR;//count不能等于0，否则返回参数错误		 	 
+	switch(pdrv)
+	{
+		case SD_CARD://SD卡
+			res=MicroSDReadDisk(buff,sector,count);	 
+			while(res)//读出错
 			{
-				SD_SPI_SpeedLow();
-				SPI1_ReadWriteByte(0xff);//提供额外的8个时钟
-				SD_SPI_SpeedHigh();
+				MicroSDInit();	//重新初始化SD卡
+				res=MicroSDReadDisk(buff,sector,count);	
+				//printf("sd rd error:%d\r\n",res);
 			}
+			
 			break;
-
-//	case EX_FLASH :
-//		for(;count>0;count--)
-//			{
-//				SPI_Flash_Read(buff,sector*FLASH_SECTOR_SIZE,FLASH_SECTOR_SIZE);
-//				sector++;
-//				buff+=FLASH_SECTOR_SIZE;
-//			}
-//			res=0;
-//			break;
-	case USB :
-		// translate the arguments here
-
-		//result = USB_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
+		case EX_FLASH://外部flash
+			for(;count>0;count--)
+			{
+				W25QXX_Read(buff,sector*FLASH_SECTOR_SIZE,FLASH_SECTOR_SIZE);
+				sector++;
+				buff+=FLASH_SECTOR_SIZE;
+			}
+			res=0;
+			break;
+		default:
+			res=1; 
 	}
-
-	return RES_PARERR;
+   //处理返回值，将SPI_SD_driver.c的返回值转成ff.c的返回值
+    if(res==0x00)return RES_OK;	 
+    else return RES_ERROR;	   
 }
-
-
-
-/*-----------------------------------------------------------------------*/
-/* Write Sector(s)                                                       */
-/*-----------------------------------------------------------------------*/
-
+//写扇区
+//pdrv:磁盘编号0~9
+//*buff:发送数据首地址
+//sector:扇区地址
+//count:需要写入的扇区数
 #if _USE_WRITE
 DRESULT disk_write (
 	BYTE pdrv,			/* Physical drive nmuber to identify the drive */
@@ -142,48 +117,40 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-	DRESULT res;
-	int result;
-	if (!count)return RES_PARERR;//count不能等于0，否则返回参数错误	
-	switch (pdrv) {
-		case SD_CARD :
-			// translate the arguments here
-
-			result = res=SD_WriteDisk((u8*)buff,sector,count);
-			// translate the reslut code here
-			return result;
-		case EX_FLASH :
-	//			// translate the arguments here
-
-	//			for(;count>0;count--)
-	//			{										    
-	//					SPI_Flash_Write((u8*)buff,sector*FLASH_SECTOR_SIZE,FLASH_SECTOR_SIZE);
-	//					sector++;
-	//					buff+=FLASH_SECTOR_SIZE;
-	//			}
-			// translate the reslut code here
-
-			return RES_OK;
-
-		case USB :
-			// translate the arguments here
-
-			//result = USB_disk_write(buff, sector, count);
-
-			// translate the reslut code here
-
-		return res;
+	u8 res=0;  
+  if (!count)return RES_PARERR;//count不能等于0，否则返回参数错误		 	 
+	switch(pdrv)
+	{
+		case SD_CARD://SD卡
+			res=MicroSDWriteDisk((u8*)buff,sector,count);
+			while(res)//写出错
+			{
+				MicroSDInit();	//重新初始化SD卡
+				res=MicroSDWriteDisk((u8*)buff,sector,count);	
+				//printf("sd wr error:%d\r\n",res);
+			}
+			break;
+		case EX_FLASH://外部flash
+			for(;count>0;count--)
+			{										    
+				W25QXX_Write((u8*)buff,sector*FLASH_SECTOR_SIZE,FLASH_SECTOR_SIZE);
+				sector++;
+				buff+=FLASH_SECTOR_SIZE;
+			}
+			res=0;
+			break;
+		default:
+			res=1; 
 	}
-
-	return RES_PARERR;
+    //处理返回值，将SPI_SD_driver.c的返回值转成ff.c的返回值
+    if(res == 0x00)return RES_OK;	 
+    else return RES_ERROR;	
 }
 #endif
-
-
-/*-----------------------------------------------------------------------*/
-/* Miscellaneous Functions                                               */
-/*-----------------------------------------------------------------------*/
-
+//其他表参数的获得
+//pdrv:磁盘编号0~9
+//ctrl:控制代码
+//*buff:发送/接收缓冲区指针
 #if _USE_IOCTL
 DRESULT disk_ioctl (
 	BYTE pdrv,		/* Physical drive nmuber (0..) */
@@ -191,29 +158,26 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-	DRESULT res;
-	int result;
-
-if(pdrv==SD_CARD)//SD卡
+DRESULT res;						  			     
+	if(pdrv==SD_CARD)//SD卡
 	{
 	    switch(cmd)
 	    {
 		    case CTRL_SYNC:
-						MicroSD_CS_RESET;
-		        if(SD_WaitReady()==0)res = RES_OK; 
-		        else res = RES_ERROR;	  
-						MicroSD_CS_SET;
+				res = RES_OK; 
 		        break;	 
 		    case GET_SECTOR_SIZE:
-		        *(WORD*)buff = 512;
+				*(DWORD*)buff = 512; 
 		        res = RES_OK;
 		        break;	 
 		    case GET_BLOCK_SIZE:
-		        *(WORD*)buff = 8;
+					//*(WORD*)buff = SDCardInfo.CardBlockSize;
+					*(WORD*)buff = 8;
 		        res = RES_OK;
 		        break;	 
 		    case GET_SECTOR_COUNT:
-		        *(DWORD*)buff = SD_GetSectorCount();
+		      //*(DWORD*)buff = SDCardInfo.CardCapacity/512;
+						*(WORD*)buff =MicroSDGetSectorCount();
 		        res = RES_OK;
 		        break;
 		    default:
@@ -222,50 +186,64 @@ if(pdrv==SD_CARD)//SD卡
 	    }
 	}else if(pdrv==EX_FLASH)	//外部FLASH  
 	{
-//	    switch(cmd)
-//	    {
-//		    case CTRL_SYNC:
-//				res = RES_OK; 
-//		        break;	 
-//		    case GET_SECTOR_SIZE:
-//		        *(WORD*)buff = FLASH_SECTOR_SIZE;
-//		        res = RES_OK;
-//		        break;	 
-//		    case GET_BLOCK_SIZE:
-//		        *(WORD*)buff = FLASH_BLOCK_SIZE;
-//		        res = RES_OK;
-//		        break;	 
-//		    case GET_SECTOR_COUNT:
-//		        *(DWORD*)buff = FLASH_SECTOR_COUNT;
-//		        res = RES_OK;
-//		        break;
-//		    default:
-//		        res = RES_PARERR;
-//		        break;
-//	    }
+	    switch(cmd)
+	    {
+		    case CTRL_SYNC:
+				res = RES_OK; 
+		        break;	 
+		    case GET_SECTOR_SIZE:
+		        *(WORD*)buff = FLASH_SECTOR_SIZE;
+		        res = RES_OK;
+		        break;	 
+		    case GET_BLOCK_SIZE:
+		        *(WORD*)buff = FLASH_BLOCK_SIZE;
+		        res = RES_OK;
+		        break;	 
+		    case GET_SECTOR_COUNT:
+		        *(DWORD*)buff = FLASH_SECTOR_COUNT;
+		        res = RES_OK;
+		        break;
+		    default:
+		        res = RES_PARERR;
+		        break;
+	    }
 	}else res=RES_ERROR;//其他的不支持
-  return res;
-
-	//return RES_PARERR;
+    return res;
 }
 
-
+//获得时间
+//User defined function to give a current time to fatfs module      */
+//31-25: Year(0-127 org.1980), 24-21: Month(1-12), 20-16: Day(1-31) */                                                                                                                                                                                                                                          
+//15-11: Hour(0-23), 10-5: Minute(0-59), 4-0: Second(0-29 *2) */                                                                                                                                                                                                                                                
 DWORD get_fattime (void)
-{				 
+{			
+	//需要一个时基用以叠加时间
 	return 0;
 }			 
 //动态分配内存
 void *ff_memalloc (UINT size)			
 {
-	return (void*)mymalloc(size);
+	return (void*)mymalloc(SRAMIN,size);
 }
 //释放内存
 void ff_memfree (void* mf)		 
 {
-	myfree(mf);
+	myfree(SRAMIN,mf);
 }
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

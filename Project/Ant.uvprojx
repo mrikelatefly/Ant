@@ -590,11 +590,6 @@
               <FilePath>..\Tools\Src\FrameBox.c</FilePath>
             </File>
             <File>
-              <FileName>Font.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Tools\Src\Font.c</FilePath>
-            </File>
-            <File>
               <FileName>malloc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Tools\Src\malloc.c</FilePath>
@@ -610,16 +605,6 @@
               <FilePath>..\File\FAT\diskio.c</FilePath>
             </File>
             <File>
-              <FileName>ff.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\File\FAT\ff.c</FilePath>
-            </File>
-            <File>
-              <FileName>cc936.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\File\FAT\cc936.c</FilePath>
-            </File>
-            <File>
               <FileName>exfuns.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\File\FAT\exfuns.c</FilePath>
@@ -628,6 +613,26 @@
               <FileName>fattester.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\File\FAT\fattester.c</FilePath>
+            </File>
+            <File>
+              <FileName>ff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\File\FAT\ff.c</FilePath>
+            </File>
+            <File>
+              <FileName>integer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\File\FAT\integer.h</FilePath>
+            </File>
+            <File>
+              <FileName>ffconf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\File\FAT\ffconf.h</FilePath>
+            </File>
+            <File>
+              <FileName>cc936.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\File\FAT\option\cc936.c</FilePath>
             </File>
           </Files>
         </Group>

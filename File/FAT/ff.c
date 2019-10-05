@@ -1031,7 +1031,7 @@ DWORD clmt_clust (	/* <2:Error, >=2:Cluster number */
 /* Directory handling - Set directory index                              */
 /*-----------------------------------------------------------------------*/
 
-static
+//static //让外部函数调用
 FRESULT dir_sdi (
 	DIR* dp,		/* Pointer to directory object */
 	UINT idx		/* Index of directory table */
